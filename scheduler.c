@@ -3,7 +3,6 @@
 #include <netinet/in.h>
 
 
-
 struct job* job_enq(struct command *cmd) {
 	struct job *j;
 	j = malloc(sizeof(struct job));
@@ -28,7 +27,6 @@ struct job* job_enq(struct command *cmd) {
 int job_deq(struct command *cmd) {
 	struct job *j, *found;
 	int32_t job_id;
-//	job_id = ntoh((int32_t)cmd->args);
 	job_id = atoi(cmd->args);
 	printf("job_deq: cmd->args %s\n",cmd->args);
 	found = NULL;
@@ -53,7 +51,6 @@ int job_stat(struct command *cmd) {
 
 }
 
-// todo: real argv
 int job_loader(struct job *job) {
 	pid_t pid = fork();
 	int ret;
@@ -89,6 +86,7 @@ int job_loader(struct job *job) {
 			printf("job_loader: job %d load fail\n", job->job_id);
 		}
 		printf("job_loader: child exit\n");
+		// need or not?
 		// exit(0);
 	} else {
 		printf("job_loader: parent kill\n");
@@ -132,7 +130,6 @@ void wait_current_job() {
 }
 
 void do_schedule() {
-	//printf("do_schedule: \n");
 	struct timeval cur_time, diff_time;
 	long last_ms, cur_ms;
 	int diff_ms;
@@ -147,7 +144,6 @@ void do_schedule() {
 	sc->sc_scheduler_last_runtime = cur_time;
 	
 	LIST_FOREACH(j, &sc->sc_jobs, job_entries) {
-		//printf("do_schedule: compute job %d \n", j->job_id);
 		if (sc->sc_current == NULL) {
 			sc->sc_current = j;
 		}
@@ -230,7 +226,6 @@ struct command * recvcommand() {
 		}
 		if (numbytes) {
 			buf[numbytes] = '/0';
-			printf("receive numbytes: %d\n", numbytes);
 			printf("receive: %s\n", buf + CMDHEADSIZE);
 		}
 		cmd = (struct command *)buf;
@@ -238,14 +233,10 @@ struct command * recvcommand() {
 	}
 }
 
-
 static void sig_timer(int i) {
-	//printf("sig_timer: \n");
 	wait_current_job();
 	do_schedule();
 }
-
-
 
 void init_sc() {
 	sc = (struct scheduler_context *)malloc(sizeof(struct scheduler_context));
@@ -255,10 +246,6 @@ void init_sc() {
 	LIST_INIT(&jobs_head);
 	LOCK_INIT(&sc->sc_lock);
 	
-	// struct itimerval timer;
-	// timer.it_value.tv_sec = 1;
-	// timer.it_value.tv_usec = 10;
-	// timer.it_interval = timer.it_value;
 	struct itimerval timer = { {0, 10000}, {0, 10000}};
 	signal(SIGALRM, sig_timer);
 	setitimer(ITIMER_REAL, &timer, NULL);
@@ -326,7 +313,6 @@ int do_req(int32_t sock, struct command * req) {
 		printf("not support command\n");
 	}
 }
-
 
 int main(int argc, char *argv[]) {
 	init_sc();
