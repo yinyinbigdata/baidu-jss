@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < argc; i++) {
 		cmd_size += strlen(argv[i]);
 		cmd_size += 1;
-		printf("size: %d, %s\n", cmd_size, argv[i]);
+		DEBUG("size: %d, %s\n", cmd_size, argv[i]);
 	}
 	
 	cmd = (struct command *)malloc(cmd_size);

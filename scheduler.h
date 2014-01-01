@@ -18,18 +18,42 @@
 #define MAXDATASIZE 1024
 #define DEFAULTSERVERIP "127.0.0.1"
 
+#define MUTEX_LOCK 1
 
+#ifdef MUTEX_LOCK
 #define LOCK_INIT(x)	pthread_mutex_init(x, 0)
 #define LOCK(x)			pthread_mutex_lock(x)
 #define TRY_LOCK(x)		pthread_mutex_trylock(x)
 #define UNLOCK(x)		pthread_mutex_unlock(x)
 #define LOCK_DESTROY(x)	pthread_mutex_destroy(x)
 
+#else
+#define LOCK_INIT(x)	
+#define LOCK(x)			
+#define TRY_LOCK(x)		
+#define UNLOCK(x)		
+#define LOCK_DESTROY(x)	
+#endif
+
+#define PRINTF( s, arg... ) printf( s "\n", ##arg)
+//#define PRINTF( s, arg... )
+//define DEBUG( s, arg... ) printf(s "\n", ##arg)
+#define DEBUG( s, arg... ) 
+
+enum job_status_e {
+	JS_INIT,
+	JS_READY,
+	JS_WAIT,
+	JS_RUNNING,
+	JS_DONE,
+};
+
 struct job {
 	LIST_ENTRY(job) job_entries;
 	int job_id;
 	pid_t job_pid;
-	int job_status;
+	//int job_status;
+	enum job_status_e job_status;
 	int job_init_priority;
 	int job_cur_priority;
 	int job_waiting;
@@ -39,6 +63,8 @@ struct job {
 	int job_efile_len;
 };
 
+
+
 LIST_HEAD(joblist_head, job) jobs_head;
 typedef struct joblist_head joblist_head_t;
 
@@ -47,6 +73,7 @@ struct scheduler_context {
 	// struct job sc_jobs[4096];
 	//LIST_HEAD(joblist_head, job_t) sc_jobs;
 	joblist_head_t sc_jobs;
+	joblist_head_t sc_done_jobs;
 	struct job *sc_current;
 	int sc_next_job_id;
 	
